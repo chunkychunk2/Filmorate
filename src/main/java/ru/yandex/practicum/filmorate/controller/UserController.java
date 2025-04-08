@@ -20,6 +20,8 @@ import java.util.Map;
 public class UserController {
     private final Map<Long, User> users = new HashMap<>();
 
+    private long id = 0;
+
     @GetMapping
     public Collection<User> findAll() {
         log.info("Получен запрос на получение списка всех пользователей.");
@@ -30,7 +32,7 @@ public class UserController {
     public User create(@RequestBody User user) {
         log.info("Получен запрос на добавление пользователя: {}", user);
         validateUser(user);
-        user.setId(getNextId());
+        user.setId(id++);
         users.put(user.getId(), user);
         log.info("Добавлен пользователь: {}", user);
         return user;
@@ -39,26 +41,21 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody User newUser) {
         log.info("Получен запрос на обновление пользователя: {}", newUser);
-        if (newUser.getId() == null) {
+        Long newUserId = newUser.getId();
+        if (newUserId == null) {
             log.warn("Id должен быть указан");
             throw new ConditionsNotMetException("Id должен быть указан");
         }
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-            if (newUser.getEmail() == null || newUser.getBirthday() == null || newUser.getLogin() == null ||
-                    newUser.getName() == null) {
-                return oldUser;
-            }
+        if (users.containsKey(newUserId)) {
+            User oldUser = users.get(newUserId);
             validateUser(newUser);
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setBirthday(newUser.getBirthday());
-            oldUser.setName(newUser.getName());
-            oldUser.setLogin(newUser.getLogin());
+            users.put(newUserId, newUser);
             log.info("Обновлен пользователь: {}", oldUser);
             return oldUser;
+        } else {
+            log.warn("Юзер с id = " + newUserId + " не найден");
+            throw new NotFoundException("Юзер с id = " + newUserId + " не найден");
         }
-        log.warn("Юзер с id = " + newUser.getId() + " не найден");
-        throw new NotFoundException("Юзер с id = " + newUser.getId() + " не найден");
     }
 
     public void validateUser(User user) {
@@ -87,14 +84,5 @@ public class UserController {
             log.warn("Дата рождения не может быть в будущем");
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 }

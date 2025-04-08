@@ -19,6 +19,8 @@ public class FilmController {
 
     private final Map<Long, Film> films = new HashMap<>();
 
+    private long id = 0;
+
     @GetMapping
     public Collection<Film> findAll() {
         log.info("Получен запрос на получение списка всех фильмов.");
@@ -29,7 +31,7 @@ public class FilmController {
     public Film create(@RequestBody Film film) {
         log.info("Получен запрос на добавление фильма: {}", film);
         validateFilm(film);
-        film.setId(getNextId());
+        film.setId(id++);
         films.put(film.getId(), film);
         log.info("Добавлен фильм: {}", film);
         return film;
@@ -38,26 +40,21 @@ public class FilmController {
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
         log.info("Получен запрос на обновление фильма: {}", newFilm);
-        if (newFilm.getId() == null) {
+        Long newFildId = newFilm.getId();
+        if (newFildId == null) {
             log.warn("Id должен быть указан");
             throw new ConditionsNotMetException("Id должен быть указан");
         }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getName() == null || newFilm.getDuration() == null || newFilm.getReleaseDate() == null ||
-                    newFilm.getDescription() == null) {
-                return oldFilm;
-            }
+        if (films.containsKey(newFildId)) {
+            Film oldFilm = films.get(newFildId);
             validateFilm(newFilm);
-            oldFilm.setDescription(newFilm.getDescription());
-            oldFilm.setDuration(newFilm.getDuration());
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            oldFilm.setName(newFilm.getName());
+            films.put(newFildId, newFilm);
             log.info("Обновлен фильм: {}", oldFilm);
             return oldFilm;
+        } else {
+            log.warn("Фильм с id = " + newFildId + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFildId + " не найден");
         }
-        log.warn("Фильм с id = " + newFilm.getId() + " не найден");
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
     public void validateFilm(Film film) {
@@ -77,14 +74,5 @@ public class FilmController {
             log.warn("Продолжительность фильма должна быть положительным числом.");
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
         }
-    }
-
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 }
