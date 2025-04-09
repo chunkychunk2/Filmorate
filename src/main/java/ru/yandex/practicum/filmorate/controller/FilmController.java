@@ -45,16 +45,15 @@ public class FilmController {
             log.warn("Id должен быть указан");
             throw new ConditionsNotMetException("Id должен быть указан");
         }
-        if (films.containsKey(newFildId)) {
-            Film oldFilm = films.get(newFildId);
+        Film oldFilm = films.get(newFildId);
+        if (oldFilm == null) {
+            log.warn("Фильм с id = " + newFildId + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFildId + " не найден");
+        }
             validateFilm(newFilm);
             films.put(newFildId, newFilm);
             log.info("Обновлен фильм: {}", oldFilm);
             return oldFilm;
-        } else {
-            log.warn("Фильм с id = " + newFildId + " не найден");
-            throw new NotFoundException("Фильм с id = " + newFildId + " не найден");
-        }
     }
 
     public void validateFilm(Film film) {

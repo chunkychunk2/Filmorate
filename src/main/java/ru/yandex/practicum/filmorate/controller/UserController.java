@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -46,16 +47,15 @@ public class UserController {
             log.warn("Id должен быть указан");
             throw new ConditionsNotMetException("Id должен быть указан");
         }
-        if (users.containsKey(newUserId)) {
-            User oldUser = users.get(newUserId);
-            validateUser(newUser);
-            users.put(newUserId, newUser);
-            log.info("Обновлен пользователь: {}", oldUser);
-            return oldUser;
-        } else {
+        User oldUser = users.get(newUserId);
+        if (oldUser == null) {
             log.warn("Юзер с id = " + newUserId + " не найден");
             throw new NotFoundException("Юзер с id = " + newUserId + " не найден");
         }
+        validateUser(newUser);
+        users.put(newUserId, newUser);
+        log.info("Обновлен пользователь: {}", oldUser);
+        return oldUser;
     }
 
     public void validateUser(User user) {
