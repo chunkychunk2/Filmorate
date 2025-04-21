@@ -1,0 +1,90 @@
+package ru.yandex.practicum.filmorate.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+
+import java.util.Collection;
+import java.util.Comparator;
+
+@Slf4j
+@Service
+public class FilmService {
+
+    private final FilmStorage filmStorage;
+
+    private final UserService userService;
+
+    @Autowired
+    public FilmService(UserService userService) {
+        this.filmStorage = new InMemoryFilmStorage();
+        this.userService = userService;
+    }
+
+    public Film create(Film film) {
+        return filmStorage.create(film);
+    }
+
+    public Film update(Film film) {
+        return filmStorage.update(film);
+    }
+
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
+    }
+
+    public Film addLike(long filmId, long userId) {
+        log.info("Доабвление <Like> к фильму");
+        if (filmId <= 0 || userId <= 0) {
+            throw new ValidationException("id пользователя не может быть меньше значния <1>");
+        }
+
+        Film film = filmStorage.findAll()
+                .stream()
+                .filter(film1 -> film1.getId() == filmId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + "не найден"));
+
+        if (film.getLikes().contains(userId)) {
+            throw new ValidationException("Пользователь c id = " + userId + " уже ставил <LIKE> фильму с id = " + filmId);
+        }
+        User user = userService.userSearchById(userId);
+        film.getLikes().add(userId);
+        log.info("Пользвоатель {} поставил <Like> фильму {} ",user.getLogin(), film.getName());
+
+        return film;
+    }
+
+    public void deleteLike(long filmId, long userId) {
+        log.info("Удаление <Like> пользвоателя из фильма");
+        if (filmId <= 0 || userId <= 0) {
+            throw new ValidationException("id пользователя не может быть меньше значния <1>");
+        }
+        Film film = filmStorage.findAll()
+                .stream()
+                .filter(film1 -> film1.getId() == filmId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + "не найден"));
+
+        if (!film.getLikes().contains(userId)) {
+            throw new NotFoundException("Ошибка удаления <Like>: Пользователь с id = " + userId +
+                    "не ставил <Like> фильму с id = " + filmId);
+        } else
+            film.getLikes().remove(userId);
+        log.info("<Like> удален");
+    }
+
+    public Collection<Film> getTopFilms(long count) {
+        log.debug("popular films count {}", count);
+        return findAll().stream()
+                .sorted(Comparator.comparing(Film::popularity).reversed())
+                .limit(count)
+                .toList();
+    }
+}
