@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -17,6 +18,7 @@ import java.util.List;
 public class UserService {
     private final UserStorage userStorage;
 
+    @Autowired
     public UserService() {
         this.userStorage = new InMemoryUserStorage();
     }
@@ -35,8 +37,8 @@ public class UserService {
 
     public User addFriend(long userId, long newFriendId) {
         log.info("Добавление пользователя в друзья");
-        User user = userSearchById(userId);
-        User newFriend = userSearchById(newFriendId);
+        User user = findById(userId);
+        User newFriend = findById(newFriendId);
 
         if (user.getFriends().contains(newFriendId) && newFriend.getFriends().contains(userId)) {
             throw new ValidationException("У пользователя уже есть друг с таким id");
@@ -48,10 +50,10 @@ public class UserService {
         return user;
     }
 
-    public User deleteFromFriends(int userId, int userToDeleteId) {
+    public User deleteFromFriends(long userId, long userToDeleteId) {
         log.info("Удаление пользователя из списка друзей");
-        User user = userSearchById(userId);
-        User userToDelete = userSearchById(userToDeleteId);
+        User user = findById(userId);
+        User userToDelete = findById(userToDeleteId);
 
         user.getFriends().remove(userToDeleteId);
         userToDelete.getFriends().remove(userId);
@@ -65,8 +67,8 @@ public class UserService {
         validationUserId(userId, friendId);
 
         Collection<User> mutualFriends = new ArrayList<>();
-        User user = userSearchById(userId);
-        User friend = userSearchById(friendId);
+        User user = findById(userId);
+        User friend = findById(friendId);
 
         if ((user.getFriends() == null || user.getFriends().isEmpty()) || (friend.getFriends() == null
                 || friend.getFriends().isEmpty())) {
@@ -93,7 +95,7 @@ public class UserService {
     public Collection<User> getUsersFriends(long userId) {
         log.info("Получение всех друзей пользователя");
         Collection<User> userFriends = new ArrayList<>();
-        User user = userSearchById(userId);
+        User user = findById(userId);
 
         Collection<User> allUsers = userStorage.findAll();
 
@@ -107,7 +109,7 @@ public class UserService {
         return userFriends;
     }
 
-    public User userSearchById(long userId) {
+    public User findById(long userId) {
         log.debug("Поиск пользоватлея с id = <{}>", userId);
         if (userId <= 0) {
             throw new ValidationException("id пользователя не может быть меньше значения <1>");

@@ -12,6 +12,7 @@ import java.util.Collection;
 
 @RestController
 @ResponseBody
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -21,12 +22,12 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public Collection<User> findAll() {
         return userService.findAll();
     }
 
-    @PostMapping("/users")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
         if (user == null) {
@@ -35,7 +36,7 @@ public class UserController {
         return userService.create(user);
     }
 
-    @PutMapping("/users")
+    @PutMapping
     public User update(@RequestBody User user) {
         if (user == null) {
             throw new NotFoundException("Не указан пользователь для обновления");
@@ -43,25 +44,25 @@ public class UserController {
         return userService.update(user);
     }
 
-    @PutMapping("/users/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public User addFriend(@PathVariable("id") int id,
                           @PathVariable("friendId") int friendId) {
         return userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping("users/{id}/friends/{friendId}")
+    @DeleteMapping("/{id}/friends/{friendId}")
     public User deleteFromFriends(@PathVariable("id") int id,
                                   @PathVariable("friendId") int friendId) {
         return userService.deleteFromFriends(id, friendId);
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> getMutualFriends(@PathVariable("id") int id,
                                              @PathVariable("otherId") int otherId) {
-        return userService.getMutualFriends(id,otherId);
+        return userService.getMutualFriends(id, otherId);
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping("/{id}/friends")
     public Collection<User> getUsersFriends(@PathVariable("id") int id) {
         return userService.getUsersFriends(id);
     }

@@ -8,10 +8,13 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.Collection;
 
 @RestController
 @Slf4j
+@RequestMapping("/films")
 public class FilmController {
 
 
@@ -22,12 +25,12 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public Collection<Film> findAll() {
-       return filmService.findAll();
+        return filmService.findAll();
     }
 
-    @PostMapping("/films")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film create(@RequestBody Film film) {
         if (film == null) {
@@ -36,7 +39,7 @@ public class FilmController {
         return filmService.create(film);
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public Film update(@RequestBody Film film) {
         if (film == null) {
             throw new NotFoundException("Не указан фильм для обновления");
@@ -44,21 +47,21 @@ public class FilmController {
         return filmService.update(film);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public Film addLike(@PathVariable("id") int id,
                         @PathVariable("userId") int userId) {
         return filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
-    public String deleteLike(@PathVariable("id") int id,
-                                 @PathVariable("userId") int userId) {
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable("id") int id,
+                           @PathVariable("userId") int userId) {
         filmService.deleteLike(id, userId);
-        return "<Like> Успешно удален";
     }
 
-    @GetMapping("/films/popular")
-    public Collection<Film> getTopFilms (@RequestParam(defaultValue = "10") String count) {
-        return filmService.getTopFilms(Long.parseLong(count));
+    @GetMapping("/popular")
+    public Collection<Film> getTopFilms(@Valid @Positive @RequestParam(defaultValue = "10") Long count) {
+
+        return filmService.getTopFilms(count);
     }
 }

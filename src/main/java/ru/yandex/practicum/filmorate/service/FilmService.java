@@ -22,8 +22,8 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(UserService userService) {
-        this.filmStorage = new InMemoryFilmStorage();
+    public FilmService(UserService userService, FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
         this.userService = userService;
     }
 
@@ -45,38 +45,32 @@ public class FilmService {
             throw new ValidationException("id пользователя не может быть меньше значния <1>");
         }
 
-        Film film = filmStorage.findAll()
-                .stream()
-                .filter(film1 -> film1.getId() == filmId)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + "не найден"));
+        Film film = filmStorage.findById(filmId);
 
         if (film.getLikes().contains(userId)) {
-            throw new ValidationException("Пользователь c id = " + userId + " уже ставил <LIKE> фильму с id = " + filmId);
+            log.warn("Пользователь c id = " + userId + " уже ставил <LIKE> фильму с id = " + filmId);
+            return film;
         }
-        User user = userService.userSearchById(userId);
-        film.getLikes().add(userId);
-        log.info("Пользвоатель {} поставил <Like> фильму {} ",user.getLogin(), film.getName());
+        User user = userService.findById(userId);
+        filmStorage.addLike(film, userId);
+        log.info("Пользователь {} поставил <Like> фильму {} ", user.getLogin(), film.getName());
 
         return film;
     }
 
     public void deleteLike(long filmId, long userId) {
-        log.info("Удаление <Like> пользвоателя из фильма");
+        log.info("Удаление <Like> пользователя из фильма");
         if (filmId <= 0 || userId <= 0) {
             throw new ValidationException("id пользователя не может быть меньше значния <1>");
         }
-        Film film = filmStorage.findAll()
-                .stream()
-                .filter(film1 -> film1.getId() == filmId)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + "не найден"));
+        Film film = filmStorage.findById(filmId);
 
         if (!film.getLikes().contains(userId)) {
             throw new NotFoundException("Ошибка удаления <Like>: Пользователь с id = " + userId +
                     "не ставил <Like> фильму с id = " + filmId);
-        } else
+        } else {
             film.getLikes().remove(userId);
+        }
         log.info("<Like> удален");
     }
 
