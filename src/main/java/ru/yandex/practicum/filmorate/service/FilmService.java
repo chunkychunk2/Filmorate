@@ -1,31 +1,25 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.Comparator;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
 
-    private final UserService userService;
-
-    @Autowired
-    public FilmService(UserService userService, FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
-        this.userService = userService;
-    }
+    private final UserStorage userStorage;
 
     public Film create(Film film) {
         return filmStorage.create(film);
@@ -51,7 +45,7 @@ public class FilmService {
             log.warn("Пользователь c id = " + userId + " уже ставил <LIKE> фильму с id = " + filmId);
             return film;
         }
-        User user = userService.findById(userId);
+        User user = userStorage.findById(userId);
         filmStorage.addLike(film, userId);
         log.info("Пользователь {} поставил <Like> фильму {} ", user.getLogin(), film.getName());
 
@@ -66,12 +60,11 @@ public class FilmService {
         Film film = filmStorage.findById(filmId);
 
         if (!film.getLikes().contains(userId)) {
-            throw new NotFoundException("Ошибка удаления <Like>: Пользователь с id = " + userId +
-                    "не ставил <Like> фильму с id = " + filmId);
+            log.warn("Пользователь c id = " + userId + " не ставил <LIKE> фильму с id = " + filmId);
         } else {
-            film.getLikes().remove(userId);
+            filmStorage.removeLike(film, userId);
+            log.info("<Like> удален");
         }
-        log.info("<Like> удален");
     }
 
     public Collection<Film> getTopFilms(long count) {

@@ -3,15 +3,12 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -27,10 +24,33 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
+
+    @Override
+    public Collection<User> findUsersByIds(Set<Long> ids) {
+        log.info("Получен запрос на получение пользователей по id: {}", ids);
+        return users.entrySet().stream()
+                .filter(entry -> ids.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public User findById(long id) {
+        log.info("Получен запрос на получение пользователя по id: {}", id);
+        log.debug("Поиск пользователя с id = <{}>", id);
+        if (id <= 0) {
+            throw new ValidationException("id пользователя не может быть меньше значения <1>");
+        }
+        User user = users.get(id);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        return user;
+    }
+
     @Override
     public User create(User user) {
         log.info("Получен запрос на добавление пользователя: {}", user);
-        validateUser(user);
         user.setId(id++);
         users.put(user.getId(), user);
         log.info("Добавлен пользователь: {}", user);
@@ -50,37 +70,18 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Юзер с id = " + newUserId + " не найден");
             throw new NotFoundException("Юзер с id = " + newUserId + " не найден");
         }
-        validateUser(newUser);
         users.put(newUserId, newUser);
         log.info("Обновлен пользователь: {}", oldUser);
         return oldUser;
     }
 
-    public void validateUser(User user) {
-        if (users.values().stream()
-                .anyMatch(u -> !u.getId().equals(user.getId()) && u.getEmail().equals(user.getEmail()))) {
-            log.warn("Этот имейл уже используется другим пользователем");
-            throw new DuplicatedDataException("Этот имейл уже используется другим пользователем");
-        }
-        if (users.values().stream()
-                .anyMatch(u -> !u.getId().equals(user.getId()) && u.getLogin().equals(user.getLogin()))) {
-            log.warn("Этот логин уже используется другим пользователем");
-            throw new DuplicatedDataException("Этот логин уже используется другим пользователем");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("электронная почта не может быть пустой и должна содержать символ @");
-            throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("логин не может быть пустым и содержать пробелы");
-            throw new ValidationException("логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Дата рождения не может быть в будущем");
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
+    @Override
+    public void addFriend(User user, long friendId) {
+        user.getFriends().add(friendId);
+    }
+
+    @Override
+    public void removeFriend(User user, long friendId) {
+
     }
 }

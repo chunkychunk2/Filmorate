@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film create(Film film) {
         log.info("Получен запрос на добавление фильма: {}", film);
-        validateFilm(film);
         film.setId(id++);
         films.put(film.getId(), film);
         log.info("Добавлен фильм: {}", film);
@@ -49,7 +47,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.warn("Фильм с id = " + newFildId + " не найден");
             throw new NotFoundException("Фильм с id = " + newFildId + " не найден");
         }
-        validateFilm(newFilm);
         films.put(newFildId, newFilm);
         log.info("Обновлен фильм: {}", oldFilm);
         return oldFilm;
@@ -57,11 +54,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film findById(long id) {
-        if (films.containsKey(id)) {
-            return films.get(id);
-        } else {
+        log.info("Получен запрос на получение фильма по id: {}", id);
+        log.debug("Поиск фильма с id = <{}>", id);
+        if (id <= 0) {
+            throw new ValidationException("id фильма не может быть меньше значения <1>");
+        }
+        Film film = films.get(id);
+        if (film == null) {
             throw new NotFoundException("Фильм с id = " + id + " не найден");
         }
+        return film;
     }
 
     @Override
@@ -69,22 +71,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.getLikes().add(id);
     }
 
-    public void validateFilm(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Название не может быть пустым");
-            throw new ValidationException("Название не может быть пустым");
-        }
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
-            log.warn("Максимальная длина описания — 200 символов");
-            throw new ValidationException("Максимальная длина описания — 200 символов");
-        }
-        if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.warn("дата релиза — не раньше 28 декабря 1895 года");
-            throw new ValidationException("дата релиза — не раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() == null || film.getDuration() <= 0) {
-            log.warn("Продолжительность фильма должна быть положительным числом.");
-            throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
-        }
+    @Override
+    public void removeLike(Film film, long id) {
+        film.getLikes().remove(id);
     }
 }
