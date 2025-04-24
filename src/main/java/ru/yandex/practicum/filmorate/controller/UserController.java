@@ -1,88 +1,71 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @RestController
+@ResponseBody
 @RequestMapping("/users")
-@Slf4j
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
 
-    private long id = 0;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> findAll() {
-        log.info("Получен запрос на получение списка всех пользователей.");
-        return users.values();
+        return userService.findAll();
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        log.info("Получен запрос на добавление пользователя: {}", user);
-        validateUser(user);
-        user.setId(id++);
-        users.put(user.getId(), user);
-        log.info("Добавлен пользователь: {}", user);
-        return user;
+    @ResponseStatus(HttpStatus.CREATED)
+    public User create(@Valid @RequestBody User user) {
+        if (user == null) {
+            throw new NotFoundException("Не указан пользователь для создания");
+        }
+        return userService.create(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
-        log.info("Получен запрос на обновление пользователя: {}", newUser);
-        Long newUserId = newUser.getId();
-        if (newUserId == null) {
-            log.warn("Id должен быть указан");
-            throw new ConditionsNotMetException("Id должен быть указан");
+    public User update(@Valid @RequestBody User user) {
+        if (user == null) {
+            throw new NotFoundException("Не указан пользователь для обновления");
         }
-        User oldUser = users.get(newUserId);
-        if (oldUser == null) {
-            log.warn("Юзер с id = " + newUserId + " не найден");
-            throw new NotFoundException("Юзер с id = " + newUserId + " не найден");
-        }
-        validateUser(newUser);
-        users.put(newUserId, newUser);
-        log.info("Обновлен пользователь: {}", oldUser);
-        return oldUser;
+        return userService.update(user);
     }
 
-    public void validateUser(User user) {
-        if (users.values().stream()
-                .anyMatch(u -> !u.getId().equals(user.getId()) && u.getEmail().equals(user.getEmail()))) {
-            log.warn("Этот имейл уже используется другим пользователем");
-            throw new DuplicatedDataException("Этот имейл уже используется другим пользователем");
-        }
-        if (users.values().stream()
-                .anyMatch(u -> !u.getId().equals(user.getId()) && u.getLogin().equals(user.getLogin()))) {
-            log.warn("Этот логин уже используется другим пользователем");
-            throw new DuplicatedDataException("Этот логин уже используется другим пользователем");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("электронная почта не может быть пустой и должна содержать символ @");
-            throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("логин не может быть пустым и содержать пробелы");
-            throw new ValidationException("логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Дата рождения не может быть в будущем");
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriend(@PathVariable("id") int id,
+                          @PathVariable("friendId") int friendId) {
+        return userService.addFriend(id, friendId);
     }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User deleteFromFriends(@PathVariable("id") int id,
+                                  @PathVariable("friendId") int friendId) {
+        return userService.deleteFromFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable("id") int id,
+                                             @PathVariable("otherId") int otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getUsersFriends(@PathVariable("id") int id) {
+        return userService.getUsersFriends(id);
+    }
+
 }
