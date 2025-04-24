@@ -110,4 +110,6 @@ class FilmValidationTest extends BaseValidationTest {
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(0, violations.size());
     }
+
 }
+

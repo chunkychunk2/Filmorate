@@ -15,4 +15,5 @@ public class LoginUniquenessValidator implements ConstraintValidator<LoginUnique
         return userStorage.findAll().stream()
                 .noneMatch(u -> u.getLogin().equals(value));
     }
+
 }

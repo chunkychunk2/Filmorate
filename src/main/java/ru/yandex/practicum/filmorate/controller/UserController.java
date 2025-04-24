@@ -67,4 +67,5 @@ public class UserController {
     public Collection<User> getUsersFriends(@PathVariable("id") int id) {
         return userService.getUsersFriends(id);
     }
+
 }

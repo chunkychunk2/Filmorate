@@ -8,7 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.FIELD, ElementType.PARAMETER })
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = LoginUniquenessValidator.class)
 public @interface LoginUniqueness {
@@ -18,4 +18,5 @@ public @interface LoginUniqueness {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
 }
