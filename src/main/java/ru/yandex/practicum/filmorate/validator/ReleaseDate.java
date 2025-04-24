@@ -18,4 +18,5 @@ public @interface ReleaseDate {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
 }

@@ -9,4 +9,5 @@ public class AtSymbolValidator implements ConstraintValidator<AtSymbol, String> 
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return value.contains("@");
     }
+    
 }

@@ -8,4 +8,5 @@ public class BaseValidationTest {
 
     private static final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
     protected final Validator validator = validatorFactory.getValidator();
+
 }

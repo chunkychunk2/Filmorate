@@ -15,4 +15,5 @@ public class EmailUniquenessValidator implements ConstraintValidator<EmailUnique
         return userStorage.findAll().stream()
                 .noneMatch(u -> u.getEmail().equals(value));
     }
+
 }
