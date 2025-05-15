@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validator.AtSymbol;
 import ru.yandex.practicum.filmorate.validator.EmailUniqueness;
 import ru.yandex.practicum.filmorate.validator.LoginUniqueness;
@@ -12,7 +15,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class User {
+
+    public User(Long id, String email, String login, LocalDate birthday, String name) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.birthday = birthday;
+        this.name = name;
+        this.friends = new HashSet<>();
+    }
 
     private Long id;
 
@@ -33,6 +48,7 @@ public class User {
     @NotNull(message = "Дата рождения не может быть null")
     private LocalDate birthday;
 
+    @Builder.Default
     private Set<Long> friends = new HashSet<>();
 
     public String getName() {
