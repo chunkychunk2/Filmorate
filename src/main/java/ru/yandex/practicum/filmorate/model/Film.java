@@ -4,14 +4,22 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validator.ReleaseDate;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
+@Builder
 public class Film {
 
     private Long id;
@@ -29,6 +37,16 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
 
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
+    private Mpa mpa;
+
+    public List<Genre> getGenres() {
+        Set<Genre> uniqueGenres = new HashSet<>(genres);
+        return new ArrayList<>(uniqueGenres);
+    }
+
+    @Builder.Default
     private Set<Long> likes = new HashSet<>();
 
     public int popularity() {
