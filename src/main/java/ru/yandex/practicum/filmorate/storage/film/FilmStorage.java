@@ -2,7 +2,11 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public interface FilmStorage {
 
@@ -14,9 +18,16 @@ public interface FilmStorage {
 
     Film findById(long id);
 
-    void addLike(Film film, long id);
+    Film findByName(String name);
 
-    void removeLike(Film film, long id);
+    Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException;
 
+    Set<Long> getLikes(long filmId);
+
+    void addLike(long filmId, long userId);
+
+    void removeLike(long filmId, long userId);
+
+    List<Film> getPopularFilms(Integer count);
 }
 
