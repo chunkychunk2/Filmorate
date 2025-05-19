@@ -36,12 +36,8 @@ public class UserService {
         userDbStorage.addFriend(id, newFriendId);
     }
 
-    public User getUserById(long userId) {
-        User user = userDbStorage.findById(userId);
-        if (user == null) {
-            throw new NotFoundException("User is not found");
-        }
-        return user;
+    public Optional<User> getUserById(long userId) {
+        return Optional.ofNullable(userDbStorage.findById(userId));
     }
 
     public Set<User> getFriends(Long userId) {

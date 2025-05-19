@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validator.AtSymbol;
 import ru.yandex.practicum.filmorate.validator.EmailUniqueness;
 import ru.yandex.practicum.filmorate.validator.LoginUniqueness;
@@ -14,9 +11,12 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
 public class User {
 
