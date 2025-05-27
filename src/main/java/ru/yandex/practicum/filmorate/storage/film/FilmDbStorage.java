@@ -30,10 +30,35 @@ public class FilmDbStorage implements FilmStorage {
 
     @Autowired
     private final JdbcTemplate jdbcTemplate;
-    @Autowired
-    private final GenreDbStorage genreDbStorage;
-    @Autowired
-    private final MpaDbStorage mpaDbStorage;
+
+    @Override
+    public Film create(Film film) {
+        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_id) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, film.getName());
+            ps.setString(2, film.getDescription());
+            ps.setDate(3, Date.valueOf(film.getReleaseDate()));
+            ps.setInt(4, Math.toIntExact(film.getDuration()));
+            ps.setObject(5, film.getMpa() != null ? film.getMpa().getId() : null);
+            return ps;
+        }, keyHolder);
+        if (keyHolder.getKey() != null) {
+            film.setId(keyHolder.getKey().longValue());
+        }
+        insertFilmGenres(film);
+        return film;
+    }
+
+    private void insertFilmGenres(Film film) {
+        String genreSql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+        for (Genre genre : film.getGenres()) {
+            jdbcTemplate.update(genreSql, film.getId(), genre.getId());
+        }
+    }
+
 
     @Override
     public Collection<Film> findAll() {
@@ -58,49 +83,6 @@ public class FilmDbStorage implements FilmStorage {
             film.getGenres().add(genre);
             return film;
         });
-    }
-
-    @Override
-    public Film create(Film film) {
-        if (mpaDbStorage.getMpaById(film.getMpa().getId()) == null) {
-            throw new NotFoundException("MPA is not found");
-        }
-        for (Genre genre : film.getGenres()) {
-            if (genreDbStorage.getGenreById(genre.getId()) == null) {
-                throw new NotFoundException("Genre is not found");
-            }
-        }
-        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_id) " +
-                "VALUES (?, ?, ?, ?, ?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, film.getName());
-            ps.setString(2, film.getDescription());
-            ps.setDate(3, Date.valueOf(film.getReleaseDate()));
-            ps.setInt(4, Math.toIntExact(film.getDuration()));
-            ps.setObject(5, film.getMpa() != null ? film.getMpa().getId() : null);
-            return ps;
-        }, keyHolder);
-        if (keyHolder.getKey() != null) {
-            film.setId(keyHolder.getKey().longValue());
-        }
-        String genreSql = "INSERT INTO film_genres (film_id, genre_id) " +
-                "VALUES (?, ?)";
-        for (Genre genre : film.getGenres()) {
-            jdbcTemplate.update(genreSql, film.getId(), genre.getId());
-        }
-        if (film.getMpa() != null && film.getMpa().getId() != 0) {
-            String ratingSql = "SELECT name " +
-                    "FROM mpa_ratings " +
-                    "WHERE mpa_id = ?";
-            List<String> ratingNames = jdbcTemplate.query(ratingSql, (rs, rowNum) -> rs.getString("name"),
-                    film.getMpa().getId());
-            if (!ratingNames.isEmpty()) {
-                film.getMpa().setName(ratingNames.get(0));
-            }
-        }
-        return film;
     }
 
     @Override
