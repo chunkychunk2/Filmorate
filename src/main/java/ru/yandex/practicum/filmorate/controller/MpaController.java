@@ -13,14 +13,10 @@ import java.util.Set;
 @Slf4j
 @RestController
 @RequestMapping
+@RequiredArgsConstructor
 public class MpaController {
 
     private final MpaService mpaService;
-
-    @Autowired
-    public MpaController(MpaService mpaService) {
-        this.mpaService = mpaService;
-    }
 
     @GetMapping("/mpa/{id}")
     public Mpa findMpaById(@PathVariable Integer id) {

@@ -25,11 +25,13 @@ import java.util.Set;
 @Repository
 @Primary
 @Qualifier("filmDbStorage")
-@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
-    @Autowired
     private final JdbcTemplate jdbcTemplate;
+
+    public FilmDbStorage(JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public Film create(Film film) {

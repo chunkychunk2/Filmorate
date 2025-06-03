@@ -16,14 +16,10 @@ import java.util.Set;
 @Slf4j
 @RestController
 @RequestMapping("/genres")
+@RequiredArgsConstructor
 public class GenreController {
 
     private final GenreService genreService;
-
-    @Autowired
-    public GenreController(GenreService genreService) {
-        this.genreService = genreService;
-    }
 
     @GetMapping
     public Set<Genre> getAllGenres() {

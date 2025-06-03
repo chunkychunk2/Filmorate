@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.util.Set;
 
@@ -11,14 +12,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class GenreService {
 
-    private final GenreDbStorage genreDbStorage;
+    private final GenreStorage genreStorage;
 
     public Genre getGenreById(Integer genreId) {
-        return genreDbStorage.getGenreById(genreId);
+        return genreStorage.getGenreById(genreId);
     }
 
     public Set<Genre> getAllGenres() {
-        return genreDbStorage.getAllGenres();
+        return genreStorage.getAllGenres();
     }
 
 }

@@ -10,8 +10,11 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -23,11 +26,11 @@ import java.util.*;
 class FilmorateDBTests {
 
     @Autowired
-    private final UserDbStorage userDbStorage;
+    private final UserStorage userDbStorage;
     @Autowired
-    private final FilmDbStorage filmDbStorage;
+    private final FilmStorage filmDbStorage;
     @Autowired
-    private final MpaDbStorage mpaDbStorage;
+    private final MpaStorage mpaDbStorage;
 
     @Test
     public void createUserTest() {

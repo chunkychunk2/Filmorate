@@ -4,11 +4,9 @@ import lombok.*;
 
 import java.util.Objects;
 
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
 @Builder
 public class Mpa {
 

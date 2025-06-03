@@ -42,8 +42,7 @@ public class Film {
     private Mpa mpa;
 
     public List<Genre> getGenres() {
-        Set<Genre> uniqueGenres = new HashSet<>(genres);
-        return new ArrayList<>(uniqueGenres);
+        return new ArrayList<>(genres);
     }
 
     @Builder.Default

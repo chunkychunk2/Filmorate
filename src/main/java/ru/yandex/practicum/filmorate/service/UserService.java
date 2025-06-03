@@ -17,47 +17,47 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    private final UserDbStorage userDbStorage;
+
+    private final UserStorage userStorage;
 
     public User create(@Valid User user) {
-        return userDbStorage.create(user);
+        return userStorage.create(user);
     }
 
     public User update(@Valid User user) {
-        return userDbStorage.update(user);
+        return userStorage.update(user);
     }
 
     public Collection<User> findAll() {
-        return userDbStorage.findAll();
+        return userStorage.findAll();
     }
 
     public void addFriend(long id, long newFriendId) {
-        userDbStorage.addFriend(id, newFriendId);
+        userStorage.addFriend(id, newFriendId);
     }
 
     public Optional<User> getUserById(long userId) {
-        return Optional.ofNullable(userDbStorage.findById(userId));
+        return Optional.ofNullable(userStorage.findById(userId));
     }
 
     public Set<User> getFriends(Long userId) {
-        return userDbStorage.getFriends(userId);
+        return userStorage.getFriends(userId);
     }
 
     public void deleteFromFriends(long id, long userToDeleteId) {
-        userDbStorage.removeFriend(id, userToDeleteId);
+        userStorage.removeFriend(id, userToDeleteId);
     }
 
     public void deleteAllFriends(long userId) {
-        userDbStorage.removeAllFriends(userId);
+        userStorage.removeAllFriends(userId);
     }
 
     public Collection<User> getCommonFriends(int userId, int friendId) {
-        return userDbStorage.getCommonFriends(userId, friendId);
+        return userStorage.getCommonFriends(userId, friendId);
     }
 
-    public boolean friendshipVerification(long user1Id, long user2Id) {
-        return userDbStorage.friendshipVerification(user1Id, user2Id);
+    public boolean friendshipVerification(long userFrom, long userTo) {
+        return userStorage.friendshipVerification(userFrom, userTo);
     }
 
 }
