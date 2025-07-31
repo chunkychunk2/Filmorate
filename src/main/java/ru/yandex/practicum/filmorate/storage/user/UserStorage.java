@@ -13,13 +13,21 @@ public interface UserStorage {
 
     Collection<User> findAll();
 
-    Collection<User> findUsersByIds(Set<Long> ids);
-
     User findById(long id);
 
-    void addFriend(User user, long friendId);
+    User findByName(String name);
 
-    void removeFriend(User user, long friendId);
+    void addFriend(long id, long friendId);
+
+    void removeFriend(long id, long friendId);
+
+    void removeAllFriends(long userId);
+
+    Set<User> getFriends(Long userId);
+
+    Set<User> getCommonFriends(long user1Id, long user2Id);
+
+    boolean friendshipVerification(long user1Id, long user2Id);
 
 }
 

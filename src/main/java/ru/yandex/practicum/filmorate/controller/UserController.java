@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,14 +15,10 @@ import java.util.Collection;
 @RestController
 @ResponseBody
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping
     public Collection<User> findAll() {
@@ -46,15 +43,15 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable("id") int id,
-                          @PathVariable("friendId") int friendId) {
-        return userService.addFriend(id, friendId);
+    public void addFriend(@PathVariable("id") Long id,
+                          @PathVariable("friendId") Long friendId) {
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFromFriends(@PathVariable("id") int id,
+    public void deleteFromFriends(@PathVariable("id") int id,
                                   @PathVariable("friendId") int friendId) {
-        return userService.deleteFromFriends(id, friendId);
+        userService.deleteFromFriends(id, friendId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -64,8 +61,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getUsersFriends(@PathVariable("id") int id) {
-        return userService.getUsersFriends(id);
+    public Collection<User> getUsersFriends(@PathVariable("id") long id) {
+        return userService.getFriends(id);
+    }
+
+
+    @GetMapping("/{id}/friends/{otherId}")
+    public boolean friendshipVerification(long id, long otherId) {
+        return userService.friendshipVerification(id, otherId);
     }
 
 }

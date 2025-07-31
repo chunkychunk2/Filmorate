@@ -11,15 +11,14 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
-
-    private final UserStorage userStorage;
 
     public Film create(Film film) {
         return filmStorage.create(film);
@@ -33,47 +32,16 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
-    public Film addLike(long filmId, long userId) {
-        log.info("Доабвление <Like> к фильму");
-        if (filmId <= 0 || userId <= 0) {
-            throw new ValidationException("id пользователя не может быть меньше значния <1>");
-        }
-
-        Film film = filmStorage.findById(filmId);
-
-        if (film.getLikes().contains(userId)) {
-            log.warn("Пользователь c id = " + userId + " уже ставил <LIKE> фильму с id = " + filmId);
-            return film;
-        }
-        User user = userStorage.findById(userId);
-        filmStorage.addLike(film, userId);
-        log.info("Пользователь {} поставил <Like> фильму {} ", user.getLogin(), film.getName());
-
-        return film;
+    public void addLike(long filmId, long userId) {
+        filmStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(long filmId, long userId) {
-        log.info("Удаление <Like> пользователя из фильма");
-        if (filmId <= 0 || userId <= 0) {
-            throw new ValidationException("id пользователя не может быть меньше значния <1>");
-        }
-        Film film = filmStorage.findById(filmId);
-
-        if (!film.getLikes().contains(userId)) {
-            log.warn("Пользователь c id = " + userId + " не ставил <LIKE> фильму с id = " + filmId);
-        } else {
-            filmStorage.removeLike(film, userId);
-            log.info("<Like> удален");
-        }
+        filmStorage.removeLike(filmId, userId);
     }
 
-    public Collection<Film> getTopFilms(long count) {
-        log.debug("popular films count {}", count);
-        return findAll().stream()
-                .sorted(Comparator.comparing(Film::popularity).reversed())
-                .limit(count)
-                .toList();
+    public List<Film> getTopFilms(int count) {
+        return filmStorage.getPopularFilms(count);
     }
-
 }
 
